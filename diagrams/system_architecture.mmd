@@ -1,0 +1,94 @@
+graph TB
+    %% Data Sources
+    subgraph "📊 Data Sources"
+        A[bitcoin_dw.db<br/>Transaction Data]
+        B[dim_market.db<br/>Market Data]
+        C[dim_wallet.db<br/>Wallet Data]
+        D[time_data.db<br/>Time Dimension]
+    end
+    
+    %% ETL Layer
+    subgraph "🔄 ETL Pipeline"
+        E[schema_matched_etl.py<br/>Extract, Transform, Load]
+        F[Data Validation<br/>& Quality Checks]
+        G[Risk Analysis<br/>& Enrichment]
+    end
+    
+    %% Data Warehouse
+    subgraph "🗄️ Data Warehouse"
+        H[(bitcoin_unified_dw.db)]
+        I[Fact Tables<br/>FactTransactions]
+        J[Dimension Tables<br/>DimTime, DimMarket, DimWallet]
+        K[Analysis Tables<br/>TransactionAnalysis, DailySummary]
+        L[Views<br/>vw_DailySummary, vw_TransactionAnalysis]
+    end
+    
+    %% Application Layer
+    subgraph "🖥️ Application Layer"
+        M[updated_dashboard.py<br/>Streamlit Dashboard]
+        N[Data Loading<br/>& Caching]
+        O[Visualization<br/>Plotly Charts]
+        P[Interactive<br/>Components]
+    end
+    
+    %% User Interface
+    subgraph "👤 User Interface"
+        Q[📊 Overview<br/>KPIs & Trends]
+        R[📈 Trading Analysis<br/>Volume & Price]
+        S[⚠️ Risk Management<br/>Suspicious Activity]
+        T[🔍 Data Explorer<br/>Interactive Tables]
+    end
+    
+    %% Utilities
+    subgraph "🔧 Utilities"
+        U[test_environment.py<br/>Environment Testing]
+        V[check_database_schema.py<br/>Schema Validation]
+    end
+    
+    %% Data Flow
+    A --> E
+    B --> E
+    C --> E
+    D --> E
+    
+    E --> F
+    F --> G
+    G --> H
+    
+    H --> I
+    H --> J
+    H --> K
+    H --> L
+    
+    I --> N
+    J --> N
+    K --> N
+    L --> N
+    
+    N --> M
+    M --> O
+    M --> P
+    
+    O --> Q
+    O --> R
+    O --> S
+    P --> T
+    
+    %% Validation Flow
+    U -.-> E
+    V -.-> H
+    
+    %% Styling
+    classDef dataSource fill:#e1f5fe
+    classDef etl fill:#f3e5f5
+    classDef warehouse fill:#e8f5e8
+    classDef app fill:#fff3e0
+    classDef ui fill:#fce4ec
+    classDef util fill:#f1f8e9
+    
+    class A,B,C,D dataSource
+    class E,F,G etl
+    class H,I,J,K,L warehouse
+    class M,N,O,P app
+    class Q,R,S,T ui
+    class U,V util

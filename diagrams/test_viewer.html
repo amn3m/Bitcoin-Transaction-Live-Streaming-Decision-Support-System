@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Bitcoin DSS Diagram Export</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #2c3e50;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .export-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .export-btn:hover {
+            background: #2980b9;
+        }
+        .mermaid {
+            text-align: center;
+            background: white;
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 Bitcoin DSS Export Test</h1>
+            <p>Testing local diagram export functionality</p>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 Test Diagram</h3>
+            <p>Simple diagram to test export functions:</p>
+            
+            <div class="mermaid" id="test-diagram">
+                graph TD
+                    A[Start] --> B{Decision}
+                    B -->|Yes| C[Action 1]
+                    B -->|No| D[Action 2]
+                    C --> E[End]
+                    D --> E
+            </div>
+            
+            <div style="text-align: center; margin: 20px 0;">
+                <button class="export-btn" onclick="testExportPNG()">📸 Test PNG Export</button>
+                <button class="export-btn" onclick="testExportSVG()">🎨 Test SVG Export</button>
+                <button class="export-btn" onclick="testCopyCode()">📋 Test Copy Code</button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔍 Export Status</h3>
+            <div id="status-messages">
+                <div class="status info">
+                    <strong>Ready:</strong> Click any export button above to test functionality
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>📋 Instructions</h3>
+            <ul>
+                <li><strong>PNG Export:</strong> Should download a high-resolution PNG image</li>
+                <li><strong>SVG Export:</strong> Should download a scalable vector graphic</li>
+                <li><strong>Copy Code:</strong> Should copy Mermaid source code to clipboard</li>
+                <li><strong>All functions:</strong> Work entirely in your browser, no external services</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'default'
+        });
+
+        function addStatusMessage(message, type = 'info') {
+            const statusDiv = document.getElementById('status-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `status ${type}`;
+            messageDiv.innerHTML = `<strong>${new Date().toLocaleTimeString()}:</strong> ${message}`;
+            statusDiv.appendChild(messageDiv);
+            
+            // Keep only last 5 messages
+            while (statusDiv.children.length > 5) {
+                statusDiv.removeChild(statusDiv.firstChild);
+            }
+        }
+
+        function testExportPNG() {
+            addStatusMessage('Testing PNG export...', 'info');
+            
+            const diagramElement = document.getElementById('test-diagram');
+            const svgElement = diagramElement.querySelector('svg');
+            
+            if (!svgElement) {
+                addStatusMessage('❌ SVG element not found. Diagram may not be loaded yet.', 'error');
+                return;
+            }
+            
+            try {
+                // Create canvas
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                // Get SVG dimensions
+                const svgRect = svgElement.getBoundingClientRect();
+                const scale = 2; // Higher resolution
+                canvas.width = svgRect.width * scale;
+                canvas.height = svgRect.height * scale;
+                
+                // Create image from SVG
+                const svgString = new XMLSerializer().serializeToString(svgElement);
+                const svgBlob = new Blob([svgString], { type: 'image/svg+xml' });
+                const url = URL.createObjectURL(svgBlob);
+                
+                const img = new Image();
+                img.onload = function() {
+                    // Set white background
+                    ctx.fillStyle = 'white';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    // Draw image
+                    ctx.scale(scale, scale);
+                    ctx.drawImage(img, 0, 0);
+                    
+                    // Convert to PNG and download
+                    canvas.toBlob(function(blob) {
+                        const downloadLink = document.createElement('a');
+                        downloadLink.href = URL.createObjectURL(blob);
+                        downloadLink.download = 'bitcoin_dss_test_diagram.png';
+                        downloadLink.click();
+                        
+                        addStatusMessage('✅ PNG export successful! File should be downloading.', 'success');
+                        
+                        // Clean up
+                        URL.revokeObjectURL(downloadLink.href);
+                        URL.revokeObjectURL(url);
+                    }, 'image/png');
+                };
+                
+                img.onerror = function() {
+                    addStatusMessage('❌ Failed to create PNG image.', 'error');
+                    URL.revokeObjectURL(url);
+                };
+                
+                img.src = url;
+                
+            } catch (error) {
+                addStatusMessage(`❌ PNG export failed: ${error.message}`, 'error');
+            }
+        }
+
+        function testExportSVG() {
+            addStatusMessage('Testing SVG export...', 'info');
+            
+            const diagramElement = document.getElementById('test-diagram');
+            const svgElement = diagramElement.querySelector('svg');
+            
+            if (!svgElement) {
+                addStatusMessage('❌ SVG element not found. Diagram may not be loaded yet.', 'error');
+                return;
+            }
+            
+            try {
+                // Clone the SVG to avoid modifying the original
+                const svgClone = svgElement.cloneNode(true);
+                
+                // Add XML declaration and namespace
+                svgClone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+                svgClone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
+                
+                // Create SVG string
+                const svgString = new XMLSerializer().serializeToString(svgClone);
+                const svgBlob = new Blob([svgString], { type: 'image/svg+xml' });
+                
+                // Create download link
+                const downloadLink = document.createElement('a');
+                downloadLink.href = URL.createObjectURL(svgBlob);
+                downloadLink.download = 'bitcoin_dss_test_diagram.svg';
+                downloadLink.click();
+                
+                addStatusMessage('✅ SVG export successful! File should be downloading.', 'success');
+                
+                // Clean up
+                URL.revokeObjectURL(downloadLink.href);
+                
+            } catch (error) {
+                addStatusMessage(`❌ SVG export failed: ${error.message}`, 'error');
+            }
+        }
+
+        function testCopyCode() {
+            addStatusMessage('Testing copy to clipboard...', 'info');
+            
+            const testCode = `graph TD
+    A[Start] --> B{Decision}
+    B -->|Yes| C[Action 1]
+    B -->|No| D[Action 2]
+    C --> E[End]
+    D --> E`;
+            
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(testCode).then(function() {
+                    addStatusMessage('✅ Code copied to clipboard successfully!', 'success');
+                }).catch(function(err) {
+                    addStatusMessage(`❌ Failed to copy to clipboard: ${err.message}`, 'error');
+                });
+            } else {
+                addStatusMessage('❌ Clipboard API not available in this browser.', 'error');
+            }
+        }
+
+        // Test if Mermaid loaded successfully
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                const svgElement = document.querySelector('#test-diagram svg');
+                if (svgElement) {
+                    addStatusMessage('✅ Mermaid diagram loaded successfully. Export functions ready.', 'success');
+                } else {
+                    addStatusMessage('⚠️ Mermaid diagram not detected. Check internet connection.', 'warning');
+                }
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

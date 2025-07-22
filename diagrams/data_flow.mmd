@@ -1,0 +1,88 @@
+flowchart TD
+    %% Data Sources
+    A[📊 Bitcoin Transaction Data<br/>bitcoin_dw.db] 
+    B[💰 Market Data<br/>dim_market.db]
+    C[🏦 Wallet Data<br/>dim_wallet.db]
+    D[📅 Time Data<br/>time_data.db]
+    
+    %% ETL Process
+    E[🔄 Extract<br/>Load source data]
+    F[🔧 Transform<br/>Clean & validate]
+    G[📈 Enrich<br/>Risk analysis]
+    H[💾 Load<br/>Unified warehouse]
+    
+    %% Data Warehouse
+    I[(🗄️ bitcoin_unified_dw.db<br/>Unified Data Warehouse)]
+    
+    %% Tables
+    J[📋 FactTransactions<br/>Central fact table]
+    K[📊 Dimension Tables<br/>Time, Market, Wallet]
+    L[🔍 Analysis Tables<br/>Risk & summaries]
+    M[👁️ Views<br/>Pre-computed analytics]
+    
+    %% Dashboard Components
+    N[🖥️ Streamlit Dashboard<br/>updated_dashboard.py]
+    O[📊 Overview Page<br/>KPIs & trends]
+    P[📈 Trading Analysis<br/>Volume & price]
+    Q[⚠️ Risk Management<br/>Suspicious activity]
+    R[🔍 Data Explorer<br/>Interactive tables]
+    
+    %% User Actions
+    S[👤 Business Users<br/>Decision makers]
+    T[📋 Reports<br/>Insights & analytics]
+    U[⚡ Real-time<br/>Monitoring]
+    V[📥 Data Export<br/>CSV downloads]
+    
+    %% Process Flow
+    A --> E
+    B --> E
+    C --> E
+    D --> E
+    
+    E --> F
+    F --> G
+    G --> H
+    H --> I
+    
+    I --> J
+    I --> K
+    I --> L
+    I --> M
+    
+    J --> N
+    K --> N
+    L --> N
+    M --> N
+    
+    N --> O
+    N --> P
+    N --> Q
+    N --> R
+    
+    O --> S
+    P --> S
+    Q --> S
+    R --> S
+    
+    S --> T
+    S --> U
+    S --> V
+    
+    %% Feedback Loop
+    T -.-> G
+    U -.-> G
+    
+    %% Styling
+    classDef source fill:#e3f2fd
+    classDef etl fill:#f3e5f5
+    classDef warehouse fill:#e8f5e8
+    classDef tables fill:#fff3e0
+    classDef dashboard fill:#fce4ec
+    classDef user fill:#f1f8e9
+    
+    class A,B,C,D source
+    class E,F,G,H etl
+    class I warehouse
+    class J,K,L,M tables
+    class N,O,P,Q,R dashboard
+    class S,T,U,V user

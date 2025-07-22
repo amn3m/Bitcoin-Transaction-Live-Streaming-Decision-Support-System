@@ -1,0 +1,132 @@
+erDiagram
+    %% Core Dimension Tables
+    DimTime {
+        int TimeKey PK
+        timestamp FullTimestamp
+        date Date
+        int Year
+        int Quarter
+        int Month
+        string MonthName
+        int Day
+        int DayOfWeekNumber
+        string DayOfWeekName
+        int Hour
+        int Minute
+        int Second
+        boolean IsWeekend
+        int WeekOfYear
+    }
+    
+    DimMarket {
+        int MarketDateKey PK
+        date MarketDate
+        decimal btc_usd_price_open
+        decimal btc_usd_price_close
+        decimal volume_usd
+        decimal market_cap_usd
+    }
+    
+    DimWallet {
+        int WalletKey PK
+        string WalletAddress
+        string EntityType
+        string EntitySubtype
+        boolean IsReportedAbuse
+        string AbuseType
+        string FirstSeenDate
+        string LastSeenDate
+        int TransactionCount
+        decimal TotalReceived
+        decimal TotalSent
+        decimal CurrentBalance
+    }
+    
+    %% Central Fact Table
+    FactTransactions {
+        int TransactionFactSK PK
+        bigint TradeID
+        string Side
+        int TimeKey FK
+        int MarketDateKey FK
+        int WalletKey FK
+        decimal Price
+        decimal VolumeQuote
+        decimal SizeBase
+    }
+    
+    %% Analysis Tables
+    TransactionAnalysis {
+        int AnalysisKey PK
+        bigint TradeID FK
+        string RiskLevel
+        boolean IsSuspicious
+        decimal AnomalyScore
+        string RiskFactors
+        timestamp AnalysisDate
+    }
+    
+    DailySummary {
+        int SummaryKey PK
+        date SummaryDate
+        int TotalTransactions
+        decimal TotalVolumeUSD
+        decimal AvgPrice
+        decimal MaxPrice
+        decimal MinPrice
+        int SuspiciousTransactions
+        decimal SuspiciousRate
+        int UniqueWallets
+        int UniqueMarkets
+    }
+    
+    %% Views (Virtual Tables)
+    vw_DailySummary {
+        date SummaryDate
+        int TotalTransactions
+        decimal TotalVolumeUSD
+        decimal AvgPrice
+        decimal SuspiciousRate
+        string TrendIndicator
+    }
+    
+    vw_TransactionAnalysis {
+        bigint TradeID
+        string Side
+        decimal Price
+        decimal VolumeQuote
+        string RiskLevel
+        boolean IsSuspicious
+        string EntityType
+        date TransactionDate
+    }
+    
+    vw_WalletRisk {
+        string WalletAddress
+        string EntityType
+        boolean IsReportedAbuse
+        int RecentTransactions
+        decimal RiskScore
+        string RiskCategory
+    }
+    
+    vw_MarketPerformance {
+        date MarketDate
+        decimal OpenPrice
+        decimal ClosePrice
+        decimal VolumeUSD
+        decimal PriceChange
+        decimal PercentChange
+    }
+    
+    %% Relationships
+    FactTransactions ||--o{ DimTime : "TimeKey"
+    FactTransactions ||--o{ DimMarket : "MarketDateKey"
+    FactTransactions ||--o{ DimWallet : "WalletKey"
+    FactTransactions ||--o{ TransactionAnalysis : "TradeID"
+    
+    %% View Dependencies (shown as relationships)
+    DailySummary ||--o{ vw_DailySummary : "derives from"
+    FactTransactions ||--o{ vw_TransactionAnalysis : "derives from"
+    DimWallet ||--o{ vw_WalletRisk : "derives from"
+    DimMarket ||--o{ vw_MarketPerformance : "derives from"
